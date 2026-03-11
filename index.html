@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Pro - Ultimate Mega Store</title>
+    <title>Nexus Pro - Grocery & Mega Store</title>
     
     <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -15,6 +15,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* ==========================================
+         * LOADING SCREEN STYLES (NEW ADDED)
+         * ========================================== */
+        #nexus-preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loader-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            animation: pulse-nexus 1.5s infinite ease-in-out;
+        }
+        .spinner-nexus {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f1f5f9;
+            border-top: 4px solid #ff385c;
+            border-radius: 50%;
+            animation: spin-nexus 1s linear infinite;
+        }
+        @keyframes spin-nexus {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse-nexus {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .loader-text {
+            margin-top: 15px;
+            font-weight: 800;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            color: #0f172a;
+            text-transform: uppercase;
+        }
+
         /* 
          * ==========================================
          * CORE CSS VARIABLES & GLOBAL RESET
@@ -110,25 +158,6 @@
             box-shadow: 0 4px 10px rgba(255, 56, 92, 0.3);
         }
 
-        /* Size Selection Buttons */
-        .size-btn { 
-            border: 2px solid #e2e8f0; 
-            padding: 12px 18px; 
-            border-radius: 16px; 
-            font-weight: 800; 
-            font-size: 12px; 
-            transition: 0.2s; 
-            background: white;
-            color: #64748b;
-        }
-        .size-btn.selected { 
-            background: var(--dark); 
-            color: white; 
-            border-color: var(--dark); 
-            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.2);
-            transform: translateY(-2px);
-        }
-
         /* Banner Carousel */
         #banner-carousel-container {
             width: 100%;
@@ -194,51 +223,15 @@
             to { opacity: 1; transform: translateY(0) scale(1); } 
         }
 
-        /* 
-         * ==========================================
-         * UPDATED GLASS NAVIGATION (FIXED BOTTOM)
-         * ==========================================
-         */
+        /* Bottom Glass Nav */
         .glass-nav { 
             background: rgba(15, 23, 42, 0.95); 
             backdrop-filter: blur(25px); 
             -webkit-backdrop-filter: blur(25px);
-            border-radius: 24px 24px 0 0; /* Only top corners rounded */
+            border-radius: 24px 24px 0 0;
             border-top: 1px solid rgba(255,255,255,0.1); 
             box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-            padding-bottom: env(safe-area-inset-bottom); /* For iPhone Home Bar */
-        }
-        
-        /* Loader */
-        #loader { 
-            position: fixed; 
-            inset: 0; 
-            background: white; 
-            z-index: 9999; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        
-        /* Floating Logo Animation */
-        .loader-float {
-            animation: floatLogo 3s ease-in-out infinite;
-        }
-        @keyframes floatLogo {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* Progress Bar Animation */
-        .loader-progress {
-            width: 0%;
-            animation: progressFill 2s ease-in-out infinite;
-        }
-        @keyframes progressFill {
-            0% { width: 0%; left: 0; }
-            50% { width: 100%; left: 0; }
-            100% { width: 0%; left: 100%; }
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* Rating Stars */
@@ -300,28 +293,26 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.1);
         }
+        
+        /* Quantity Buttons */
+        .qty-btn {
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            background: white; border: 1px solid #e2e8f0; border-radius: 8px; color: #0f172a;
+            transition: 0.2s;
+        }
+        .qty-btn:active { background: #f1f5f9; transform: scale(0.9); }
 
     </style>
 </head>
 <body>
 
     <!-- ==========================================
-         NEW LOADER SCREEN (No Spinner, Beautiful Animation)
+         NEW: PRELOADER (LOADER) 
          ========================================== -->
-    <div id="loader">
-        <div class="relative mb-8">
-            <!-- Glowing Background Effect -->
-            <div class="absolute inset-0 bg-rose-500 blur-2xl opacity-20 rounded-full animate-pulse"></div>
-            <!-- Logo with Float Animation -->
-            <img id="loader-img" src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" class="w-28 h-28 object-contain relative z-10 loader-float">
-        </div>
-        
-        <!-- Sleek Progress Bar -->
-        <div class="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden relative">
-            <div class="absolute top-0 bottom-0 bg-rose-500 rounded-full loader-progress"></div>
-        </div>
-        
-        <p class="mt-5 font-black text-[10px] uppercase tracking-[0.4em] text-slate-300 animate-pulse">Starting Engine...</p>
+    <div id="nexus-preloader">
+        <img src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" class="loader-logo">
+        <div class="spinner-nexus"></div>
+        <p class="loader-text">Nexus Premium Loading</p>
     </div>
 
     <!-- ==========================================
@@ -339,7 +330,6 @@
             <p class="text-white/50 text-xs font-bold uppercase tracking-widest mb-10">Let's set up your profile</p>
             
             <div class="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-black/30">
-                <!-- Image Picker -->
                 <div class="relative w-24 h-24 mx-auto mb-6">
                     <img id="welcome-pfp-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Nexus" class="w-full h-full rounded-full object-cover border-4 border-slate-100 shadow-lg">
                     <label for="welcome-pfp-input" class="absolute bottom-0 right-0 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-90 transition-transform hover:bg-rose-500">
@@ -348,7 +338,6 @@
                     <input type="file" id="welcome-pfp-input" class="hidden" accept="image/*" onchange="previewIntroImage(event)">
                 </div>
 
-                <!-- Name Input -->
                 <div class="mb-6">
                     <input type="text" id="welcome-name-input" class="input-box w-full p-4 rounded-xl font-bold text-slate-800 outline-none text-sm text-center bg-slate-50 focus:bg-white" placeholder="Enter Your Full Name">
                 </div>
@@ -412,13 +401,12 @@
             <div class="category-item active" onclick="filterCategory('All', this)">
                 <i class="fa-solid fa-layer-group mr-1.5"></i>All
             </div>
-            <div class="category-item" onclick="filterCategory('Clothes', this)">👕 Men's</div>
-            <div class="category-item" onclick="filterCategory('Women', this)">👗 Women's</div>
-            <div class="category-item" onclick="filterCategory('Shoes', this)">👟 Shoes</div>
-            <div class="category-item" onclick="filterCategory('Watch', this)">⌚ Watches</div>
-            <div class="category-item" onclick="filterCategory('Electric', this)">🔌 Gadgets</div>
-            <div class="category-item" onclick="filterCategory('Perfume', this)">✨ Scent</div>
             <div class="category-item" onclick="filterCategory('Grocery', this)">🥦 Grocery</div>
+            <div class="category-item" onclick="filterCategory('Chips', this)">🍟 Chips</div>
+            <div class="category-item" onclick="filterCategory('Biscuits', this)">🍪 Biscuits</div>
+            <div class="category-item" onclick="filterCategory('Chocolate', this)">🍫 Chocolate</div>
+            <div class="category-item" onclick="filterCategory('Beverage', this)">🧃 Beverage</div>
+            <div class="category-item" onclick="filterCategory('Spices', this)">🌶️ Spices</div>
         </div>
 
         <!-- Products Grid -->
@@ -494,12 +482,11 @@
     </main>
 
     <!-- ==========================================
-         PROFILE PAGE (UPDATED)
+         PROFILE PAGE
          ========================================== -->
     <main id="profile-page" class="page px-6 text-center">
         <div class="premium-card p-10 mb-8 border border-slate-100 bg-gradient-to-b from-white to-slate-50 relative overflow-visible">
             
-            <!-- Quick Edit Button -->
             <button onclick="openProfileEditor()" class="absolute top-4 right-4 text-slate-400 hover:text-rose-500 transition-colors bg-white border border-slate-100 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
@@ -562,7 +549,7 @@
     </div>
 
     <!-- ==========================================
-         PRODUCT DETAILS MODAL
+         PRODUCT DETAILS MODAL (BACKGROUND REMOVED)
          ========================================== -->
     <div id="modal" class="fixed inset-0 bg-white z-[2000] hidden overflow-y-auto">
         <div class="p-6 pt-24 max-w-2xl mx-auto min-h-screen relative">
@@ -570,9 +557,10 @@
                 <i class="fa fa-chevron-left text-slate-900"></i>
             </button>
             
-            <div class="bg-slate-50 rounded-[3.5rem] p-12 mb-10 flex items-center justify-center relative min-h-[400px] border border-slate-100">
+            <!-- Removed bg-slate-50 and border for full view -->
+            <div class="mb-10 flex items-center justify-center relative min-h-[400px]">
                 <div id="m-discount-tag" class="discount-badge hidden scale-125 top-10 left-10"></div>
-                <img id="m-img" src="" class="max-h-80 w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:scale-105 transition-transform duration-500">
+                <img id="m-img" src="" class="max-h-[450px] w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:scale-105 transition-transform duration-500">
                 
                 <button id="like-btn" class="absolute bottom-8 right-8 w-16 h-16 bg-white shadow-2xl rounded-[1.5rem] text-slate-300 text-2xl flex items-center justify-center border border-slate-50 active:scale-90 transition-all hover:text-rose-500">
                     <i class="fa-regular fa-heart"></i>
@@ -585,22 +573,6 @@
                 </div>
                 <p id="m-desc" class="text-slate-500 font-medium mb-10 leading-relaxed text-sm"></p>
 
-                <div id="size-section" class="mb-10 hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Select Size</p>
-                        <span class="text-[10px] text-rose-500 font-bold cursor-pointer">Size Guide</span>
-                    </div>
-                    <!-- BUTTONS TEXT WILL CHANGE DYNAMICALLY FOR SHOES -->
-                    <div class="flex gap-3">
-                        <button onclick="selectSize(this, 'S')" class="size-btn flex-1 py-4">S</button>
-                        <button onclick="selectSize(this, 'M')" class="size-btn flex-1 py-4">M</button>
-                        <button onclick="selectSize(this, 'L')" class="size-btn flex-1 py-4">L</button>
-                        <button onclick="selectSize(this, 'XL')" class="size-btn flex-1 py-4">XL</button>
-                        <button onclick="selectSize(this, 'XXL')" class="size-btn flex-1 py-4">XXL</button>
-                    </div>
-                </div>
-
-                <!-- NEW: DISPLAY COMMENTS SECTION -->
                 <div class="mb-6">
                     <h4 class="font-black text-xs uppercase tracking-widest text-slate-900 mb-4">Customer Reviews</h4>
                     <div id="comments-container" class="space-y-4 max-h-64 overflow-y-auto pr-2">
@@ -635,6 +607,15 @@
                     
                     <button onclick="submitReport()" class="w-full mt-8 text-[10px] text-slate-300 font-bold uppercase tracking-[0.3em] hover:text-rose-400 transition-colors underline decoration-dashed decoration-2 underline-offset-4">Report Issue</button>
                 </div>
+                
+                <!-- NEW: RELATED PRODUCTS SECTION -->
+                <div id="related-products-wrapper" class="hidden mb-6">
+                    <h4 class="font-black text-xs uppercase tracking-widest text-slate-900 mb-4 px-2">You May Also Like</h4>
+                    <div id="related-products-scroll" class="flex gap-4 overflow-x-auto pb-4 px-2" style="scrollbar-width: none;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
             </div>
 
             <div class="fixed bottom-0 left-0 w-full p-6 px-8 bg-white/90 backdrop-blur-2xl border-t border-slate-100 flex justify-between items-center z-[2020] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
@@ -686,8 +667,17 @@
          JAVASCRIPT LOGIC
          ========================================== -->
     <script>
+        // --- PRELOADER LOGIC (NEW) ---
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const preloader = document.getElementById('nexus-preloader');
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+            }, 2000); // 2 seconds loading
+        });
+
         // --- CONFIGURATION ---
-        const DELIVERY_CHARGE = 120; // Fixed Delivery Charge for Bangladesh
+        const DELIVERY_CHARGE = 120; 
         
         // --- FIREBASE SETUP ---
         const firebaseConfig = {
@@ -707,29 +697,26 @@
         localStorage.setItem('nexus_uid', USER_ID);
         
         let products = [], cart = [], wishlist = [], banners = [];
-        let selectedSize = null, selectedColor = null, userRating = 0, currentProductId = null;
+        let userRating = 0, currentProductId = null;
         let activeCategory = 'All';
         let dynamicLink = ""; 
         let bannerInterval;
-        let newProfileImageBase64 = null; // For Edit Profile
-        let introImageBase64 = null; // For Welcome Screen
+        let newProfileImageBase64 = null; 
+        let introImageBase64 = null; 
 
         // --- INITIALIZATION ---
         function init() {
-            // CHECK FOR FIRST TIME USER
             const setupComplete = localStorage.getItem('nexus_setup_complete');
             if(!setupComplete) {
                 document.getElementById('welcome-modal').classList.remove('hidden');
             }
 
-            // 1. Settings & Headers
             db.ref('settings').on('value', snap => {
                 if(snap.exists()) {
                     const data = snap.val();
                     document.getElementById('app-name').innerText = data.appName || "NEXUS PRO";
                     const logoUrl = data.appLogo || "https://cdn-icons-png.flaticon.com/512/3081/3081840.png";
                     document.getElementById('app-logo').src = logoUrl;
-                    document.getElementById('loader-img').src = logoUrl; 
                     
                     const dotBtn = document.getElementById('dynamic-dot-btn');
                     const dotIcon = document.getElementById('dynamic-dot-icon');
@@ -747,7 +734,6 @@
                 }
             });
 
-            // 2. Banner System
             db.ref('banners').on('value', snap => {
                 banners = [];
                 if(snap.exists()) {
@@ -758,21 +744,14 @@
                 }
             });
 
-            // 3. Product Catalog (UPDATED FOR SORTING)
             db.ref('products').on('value', snap => {
                 products = [];
                 if(snap.exists()) snap.forEach(child => { products.push({ id: child.key, ...child.val() }); });
                 
-                // --- SORT BY POPULARITY ---
-                // যে প্রোডাক্ট বেশি কার্ট এ এড হয়েছে, সেটা সবার উপরে যাবে
                 products.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-                // --------------------------------------
-
                 renderProducts();
-                document.getElementById('loader').style.display = 'none';
             });
 
-            // 4. User Profile
             db.ref('users/' + USER_ID).on('value', snap => {
                 if(snap.exists()) {
                     const data = snap.val();
@@ -785,7 +764,6 @@
                     if(data.name) {
                         document.getElementById('user-display-name').innerText = data.name;
                         document.getElementById('u-name').value = data.name;
-                        // If name exists in DB, assume setup is done (sync across devices)
                         localStorage.setItem('nexus_setup_complete', 'true');
                         document.getElementById('welcome-modal').classList.add('hidden');
                     } else {
@@ -798,7 +776,6 @@
                 document.getElementById('profile-id').innerText = "MEMBER ID: " + USER_ID;
             });
 
-            // 5. Order History
             db.ref('users/' + USER_ID + '/orders').on('value', snap => {
                 const history = document.getElementById('order-history');
                 history.innerHTML = '';
@@ -823,7 +800,6 @@
                 }
             });
 
-            // 6. Hub Features
             db.ref('hub_features').on('value', snap => {
                 const container = document.getElementById('hub-content');
                 if(snap.exists()) {
@@ -840,7 +816,6 @@
             });
         }
 
-        // --- NEW: WELCOME SCREEN LOGIC ---
         function previewIntroImage(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -867,7 +842,6 @@
             });
         }
 
-        // --- BANNER LOGIC ---
         function renderBanners() {
             const container = document.getElementById('banner-carousel-container');
             const dotsContainer = document.getElementById('banner-dots');
@@ -910,13 +884,13 @@
             }, 4000); 
         }
 
-        // --- PRODUCT RENDERING ---
+        // --- UPDATED: Products background removed and made larger ---
         function renderProducts(list = products) {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = list.length ? list.map(p => `
                 <div class="premium-card p-4 pb-5 flex flex-col justify-between h-full" onclick="openModal('${p.id}')">
                     ${p.discount ? `<div class="discount-badge">৳${p.discount} OFF</div>` : ''}
-                    <div class="h-36 w-full bg-slate-50 rounded-[1.5rem] mb-4 flex items-center justify-center p-2 relative overflow-hidden group">
+                    <div class="h-48 w-full mb-4 flex items-center justify-center relative overflow-hidden group">
                         <img src="${p.image}" class="h-full w-full object-contain drop-shadow-md transform transition-transform duration-500 group-hover:scale-110">
                     </div>
                     <div>
@@ -939,7 +913,6 @@
                 </div>`;
         }
 
-        // --- PROFILE EDITING LOGIC ---
         function openProfileEditor() {
             const modal = document.getElementById('edit-profile-modal');
             const currentName = document.getElementById('user-display-name').innerText;
@@ -992,14 +965,11 @@
             }).catch(e => alert("Error updating profile: " + e.message));
         }
 
-        // --- MODAL CONTROLS (UPDATED LOGIC) ---
         function openModal(id) {
             const p = products.find(x => x.id === id);
             if(!p) return;
             currentProductId = id; 
             userRating = 0; 
-            selectedSize = null; 
-            // COLOR REMOVED
             resetStars();
             
             document.getElementById('m-name').innerText = p.name;
@@ -1015,59 +985,23 @@
                 dTag.classList.add('hidden');
             }
 
-            const sizeSec = document.getElementById('size-section');
-            const cat = p.category;
-
-            // --- UPDATED VARIANT LOGIC ---
-            // 1. Remove Color (Done in HTML)
-            // 2. Women's Clothes = NO SIZE needed.
-            // 3. Shoes = SIZE NEEDED (and numbers).
-            // 4. Men's Clothes = SIZE NEEDED (S, M, L).
-            
-            const needsSize = (cat === 'Clothes' || cat === 'Shoes'); // Women excluded
-
-            if (needsSize) {
-                sizeSec.classList.remove('hidden');
-                
-                // DYNAMIC SIZE LABELS FOR SHOES VS CLOTHES
-                const labels = (cat === 'Shoes') 
-                    ? ['39', '40', '41', '42', '43'] 
-                    : ['S', 'M', 'L', 'XL', 'XXL'];
-                
-                const btns = document.querySelectorAll('.size-btn');
-                btns.forEach((btn, i) => {
-                    if(labels[i]) {
-                        btn.innerText = labels[i];
-                        // Update onclick dynamically
-                        btn.onclick = function() { selectSize(this, labels[i]); };
-                    }
-                });
-
-            } else {
-                sizeSec.classList.add('hidden');
-            }
-
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-
             const isLiked = wishlist.some(item => item.id === id);
             updateLikeUI(isLiked);
 
-            // --- NEW: FETCH COMMENTS ---
+            // Fetch Reviews
             const commentsContainer = document.getElementById('comments-container');
             commentsContainer.innerHTML = '<div class="text-center py-4"><i class="fa fa-circle-notch fa-spin text-slate-300"></i></div>';
             
             db.ref('reviews/' + id).on('value', snap => {
                 commentsContainer.innerHTML = '';
                 if(snap.exists()) {
-                    const reviews = Object.values(snap.val()).reverse(); // Newest first
+                    const reviews = Object.values(snap.val()).reverse(); 
                     reviews.forEach(r => {
-                        // Generate Stars HTML
                         let starsHtml = '';
                         for(let i=0; i<5; i++) {
                             starsHtml += `<i class="fa fa-star text-[8px] ${i < r.rating ? 'text-amber-400' : 'text-slate-200'}"></i>`;
                         }
 
-                        // Default Avatar if missing
                         const userImg = r.userPfp || 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png';
                         const userName = r.userName || 'Nexus Member';
 
@@ -1092,23 +1026,49 @@
                 }
             });
 
-            document.getElementById('modal').classList.remove('hidden');
+            // RELATED PRODUCTS GENERATION (Background removed)
+            const relatedWrapper = document.getElementById('related-products-wrapper');
+            const relatedContainer = document.getElementById('related-products-scroll');
+            
+            const relatedProducts = products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 6);
+            
+            if(relatedProducts.length > 0) {
+                relatedContainer.innerHTML = relatedProducts.map(rp => `
+                    <div class="min-w-[130px] bg-white border border-slate-200 rounded-2xl p-3 pb-4 shadow-sm flex-shrink-0 cursor-pointer active:scale-95 transition-transform" onclick="openModal('${rp.id}')">
+                        <div class="h-28 mb-3 flex items-center justify-center relative">
+                            <img src="${rp.image}" class="h-full object-contain">
+                        </div>
+                        <h5 class="text-[10px] font-black uppercase truncate text-slate-800 tracking-tight">${rp.name}</h5>
+                        <p class="text-[11px] font-black text-rose-500 mt-1 leading-none">৳${rp.price}</p>
+                    </div>
+                `).join('');
+                relatedWrapper.classList.remove('hidden');
+            } else {
+                relatedWrapper.classList.add('hidden');
+            }
+
+            const modalElement = document.getElementById('modal');
+            modalElement.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             
-            // --- ADD TO CART CLICK ---
+            // Scroll to top of modal for smooth UX when opening from Related Products
+            modalElement.scrollTo({ top: 0, behavior: 'smooth' });
+            
             document.getElementById('add-btn').onclick = () => {
-                if (needsSize && !selectedSize) return alert("⚠️ Please Select a Size!");
-
-                // INCREMENT POPULARITY
                 db.ref('products/' + currentProductId + '/popularity').transaction(current_value => {
                     return (current_value || 0) + 1;
                 });
 
-                cart.push({ 
-                    ...p, 
-                    selectedSize: needsSize ? selectedSize : null,
-                    selectedColor: null // No color
-                });
+                // Check if product already in cart
+                const existingItemIndex = cart.findIndex(item => item.id === p.id);
+                
+                if (existingItemIndex !== -1) {
+                    // Increase Quantity
+                    cart[existingItemIndex].quantity += 1;
+                } else {
+                    // Add new item with qty 1
+                    cart.push({ ...p, quantity: 1 });
+                }
                 
                 updateCartUI();
                 closeModal();
@@ -1125,11 +1085,9 @@
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
-            // Detach listener to prevent memory leaks (optional but good practice)
             if(currentProductId) db.ref('reviews/' + currentProductId).off();
         }
 
-        // --- EXTERNAL APP SYSTEM ---
         function openExternalApp(type) {
             if(type === 'dynamic') {
                 if(dynamicLink) {
@@ -1146,7 +1104,6 @@
             });
         }
 
-        // --- REVIEWS & REPORTING ---
         function setRating(n) {
             userRating = n; 
             resetStars();
@@ -1161,21 +1118,19 @@
             if(!userRating) return alert("Please select a star rating (1-5)!");
             if(!text) return alert("Please write a short review!");
             
-            // GET CURRENT USER DATA FOR DISPLAY
             const currentName = document.getElementById('user-display-name').innerText;
             const currentPfp = document.getElementById('pfp-img').src;
 
             const reviewData = { 
                 userId: USER_ID, 
-                userName: currentName,  // Added Name
-                userPfp: currentPfp,    // Added Photo
+                userName: currentName,  
+                userPfp: currentPfp,    
                 rating: userRating, 
                 comment: text, 
                 timestamp: firebase.database.ServerValue.TIMESTAMP 
             };
             
             db.ref('reviews/' + currentProductId).push(reviewData).then(() => {
-                // alert("Thank you! Your review has been submitted."); // Alert removed for smoother UX, comments appear instantly
                 document.getElementById('review-text').value = '';
                 resetStars();
             });
@@ -1194,11 +1149,22 @@
             }
         }
 
-        // --- CART SYSTEM ---
+        // QTY Modifier Function
+        function changeQty(index, change) {
+            cart[index].quantity += change;
+            if(cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCartUI();
+        }
+
         function updateCartUI() {
             const badge = document.getElementById('cart-badge');
-            badge.innerText = cart.length;
-            badge.classList.toggle('hidden', cart.length === 0);
+            // Calculate total items (sum of quantities)
+            const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            badge.innerText = totalQuantity;
+            badge.classList.toggle('hidden', totalQuantity === 0);
             
             const container = document.getElementById('cart-container');
             let subtotal = 0;
@@ -1212,14 +1178,8 @@
                     </div>`;
             } else {
                 container.innerHTML = cart.map((p, i) => {
-                    subtotal += Number(p.price);
-                    
-                    let variantText = "";
-                    if(p.selectedSize) {
-                        variantText = `<span class="block text-[10px] text-slate-400 font-bold mt-1">
-                            Size: ${p.selectedSize}
-                        </span>`;
-                    }
+                    const itemTotal = Number(p.price) * p.quantity;
+                    subtotal += itemTotal;
 
                     return `
                     <div class="premium-card p-4 flex gap-4 items-center bg-white border border-slate-100">
@@ -1228,12 +1188,20 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h4 class="text-[11px] font-black uppercase text-slate-800 tracking-tight truncate">${p.name}</h4>
-                            ${variantText}
-                            <p class="text-rose-500 font-black text-xs mt-1">৳${p.price}</p>
+                            <p class="text-rose-500 font-black text-xs mt-1">৳${p.price} <span class="text-[9px] text-slate-400 font-bold ml-1">(Total: ৳${itemTotal})</span></p>
+                            
+                            <!-- Quantity Controls -->
+                            <div class="flex items-center gap-4 mt-3">
+                                <div class="flex items-center gap-2 bg-slate-50 rounded-lg p-1 border border-slate-100">
+                                    <button onclick="changeQty(${i}, -1)" class="qty-btn"><i class="fa fa-minus text-[10px]"></i></button>
+                                    <span class="text-xs font-black w-6 text-center text-slate-800">${p.quantity}</span>
+                                    <button onclick="changeQty(${i}, 1)" class="qty-btn"><i class="fa fa-plus text-[10px]"></i></button>
+                                </div>
+                                <button onclick="removeCartItem(${i})" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors bg-white border border-slate-100 rounded-lg shadow-sm">
+                                    <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                </button>
+                            </div>
                         </div>
-                        <button onclick="removeCartItem(${i})" class="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors hover:bg-rose-50 rounded-xl">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
                     </div>`;
                 }).join('');
             }
@@ -1267,14 +1235,11 @@
             if(ph.length < 11) return alert("⚠️ Enter a valid 11-digit phone number!");
 
             const oid = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
-            const subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+            const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
             const totalAmount = subtotal + DELIVERY_CHARGE;
             
-            const itemsList = cart.map(x => {
-                let details = x.name;
-                if(x.selectedSize) details += ` [${x.selectedSize}]`;
-                return details;
-            }).join(', ');
+            // Format item list properly with quantity
+            const itemsList = cart.map(x => `${x.name} (x${x.quantity})`).join(', ');
 
             const orderData = { 
                 id: oid, 
@@ -1298,7 +1263,6 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP 
             });
 
-            // Auto-save name if they didn't have one before
             db.ref('users/' + USER_ID).update({ name: n });
 
             const msg = `
@@ -1328,7 +1292,6 @@ Please confirm delivery timeline.`.trim();
             alert("✅ Order placed successfully! Check your WhatsApp.");
         }
 
-        // --- FILTERING ---
         function filterProducts() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const filtered = products.filter(p => {
@@ -1346,7 +1309,6 @@ Please confirm delivery timeline.`.trim();
             filterProducts();
         }
 
-        // --- WISHLIST LOGIC ---
         function toggleWishlist(p) {
             const isLiked = wishlist.some(item => item.id === p.id);
             if(!isLiked) {
@@ -1364,11 +1326,12 @@ Please confirm delivery timeline.`.trim();
             btn.classList.toggle('text-rose-500', liked);
         }
 
+        // --- UPDATED: Wishlist background removed ---
         function renderWishlist() {
             const grid = document.getElementById('wishlist-grid');
             grid.innerHTML = wishlist.length ? wishlist.map(p => `
                 <div class="premium-card p-4">
-                    <div class="h-32 w-full bg-slate-50 rounded-2xl mb-3 flex items-center justify-center p-2">
+                    <div class="h-40 w-full mb-3 flex items-center justify-center relative">
                         <img src="${p.image}" class="h-full object-contain">
                     </div>
                     <h4 class="font-black text-[10px] uppercase truncate tracking-tighter text-slate-800">${p.name}</h4>
@@ -1380,7 +1343,6 @@ Please confirm delivery timeline.`.trim();
             `).join('') : '<div class="col-span-2 text-center py-32 opacity-30"><i class="fa-regular fa-heart text-5xl mb-3"></i><p class="font-black uppercase tracking-widest text-xs">Wishlist Empty</p></div>';
         }
 
-        // --- NAVIGATION & UTILS ---
         function nav(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
             document.getElementById(id).classList.add('page-active');
@@ -1399,17 +1361,10 @@ Please confirm delivery timeline.`.trim();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function selectSize(btn, s) {
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected'); 
-            selectedSize = s;
-        }
-
         function openDynamicHub() {
             document.getElementById('hub-modal').classList.remove('hidden');
         }
 
-        // START APP
         init();
     </script>
 </body>
